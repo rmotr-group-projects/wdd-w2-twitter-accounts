@@ -31,6 +31,7 @@
                         <li><a href='/profile'>@{{ request.user.username }}</a></li>
                         <li><a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></li>
                       {% else %}
+                        <li><a href="/register"><i class="" aria-hidden="true"></i> Register</a></li>
                         <li><a href="/login"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
                       {% endif %}
                     </ul>

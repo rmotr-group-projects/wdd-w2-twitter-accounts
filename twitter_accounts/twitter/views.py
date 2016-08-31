@@ -11,7 +11,8 @@ from django.db.models import Q
 from django.core.mail import send_mail
 
 from .models import Tweet, ValidationToken
-from .forms import TweetForm, RegisterForm, ChangePasswordForm
+from .forms import (TweetForm, ProfileForm, RegisterForm, ChangePasswordForm,
+                    ResetPasswordForm, ConfirmResetPasswordForm)
 
 User = get_user_model()
 
@@ -58,6 +59,60 @@ def home(request, username=None):
         'tweets': tweets,
         'following_profile': following_profile
     })
+
+
+@login_required()
+def profile(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = request.user
+            user.avatar = form.cleaned_data["avatar"] or user.avatar
+            user.first_name = form.cleaned_data["first_name"]
+            user.last_name = form.cleaned_data["last_name"]
+            user.birth_date = form.cleaned_data["birth_date"]
+            user.save()
+            messages.success(request, 'Profile updated successfully!')
+    else:
+        form = ProfileForm(initial={
+            "avatar": request.user.avatar,
+            "username": request.user.username,
+            "first_name": request.user.first_name,
+            "last_name": request.user.last_name,
+            "birth_date": request.user.birth_date,
+        })
+
+    return render(request, 'profile.html', {
+        'form': form
+    })
+
+
+@login_required()
+@require_POST
+def follow(request):
+    followed = get_object_or_404(
+        get_user_model(), username=request.POST['username'])
+    request.user.follow(followed)
+    return redirect(request.GET.get('next', '/'))
+
+
+@login_required()
+@require_POST
+def unfollow(request):
+    unfollowed = get_object_or_404(
+        get_user_model(), username=request.POST['username'])
+    request.user.unfollow(unfollowed)
+    return redirect(request.GET.get('next', '/'))
+
+
+@login_required()
+def delete_tweet(request, tweet_id):
+    tweet = get_object_or_404(Tweet, pk=tweet_id)
+    if tweet.user != request.user:
+        raise PermissionDenied
+    tweet.delete()
+    messages.success(request, 'Tweet successfully deleted')
+    return redirect(request.GET.get('next', '/'))
 
 
 def register(request):
@@ -111,62 +166,43 @@ def change_password(request):
         if form.is_valid():
             request.user.set_password(form.cleaned_data["new_password"])
             request.user.save()
-            return redirect(request.GET.get('next', '/'))
+            messages.success(request, 'Password changed successfully!')
     return render(request, 'change_password.html', {
         'form': form
     })
 
 
-
-# @login_required()
-# def profile(request):
-#     if request.method == "POST":
-#         form = ProfileForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             user = request.user
-#             user.avatar = form.cleaned_data["avatar"] or user.avatar
-#             user.first_name = form.cleaned_data["first_name"]
-#             user.last_name = form.cleaned_data["last_name"]
-#             user.birth_date = form.cleaned_data["birth_date"]
-#             user.save()
-#             return redirect(request.GET.get('next', '/'))
-#     else:
-#         form = ProfileForm(initial={
-#             "avatar": request.user.avatar,
-#             "username": request.user.username,
-#             "first_name": request.user.first_name,
-#             "last_name": request.user.last_name,
-#             "birth_date": request.user.birth_date,
-#         })
-
-#     return render(request, 'profile.html', {
-#         'form': form
-#     })
+def reset_password(request):
+    form = ResetPasswordForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            if User.objects.filter(email=form.cleaned_data['email']).exists():
+                token = ValidationToken.objects.create(
+                    email=form.cleaned_data["email"])
+                url = 'http://twitter.com/users/confirm-reset-password/{}'.format(token.token)
+                send_mail(
+                    'Password recovery.',
+                    'To reset your password, please click in the link below: {}'.format(url),
+                    'twitter@noreply.com',
+                    [form.cleaned_data["email"]],
+                    fail_silently=False,
+                )
+            messages.success(request, 'Email sent!')
+    return render(request, 'reset_password.html', {
+        'form': form
+    })
 
 
-# @login_required()
-# @require_POST
-# def follow(request):
-#     followed = get_object_or_404(
-#         get_user_model(), username=request.POST['username'])
-#     request.user.follow(followed)
-#     return redirect(request.GET.get('next', '/'))
-
-
-# @login_required()
-# @require_POST
-# def unfollow(request):
-#     unfollowed = get_object_or_404(
-#         get_user_model(), username=request.POST['username'])
-#     request.user.unfollow(unfollowed)
-#     return redirect(request.GET.get('next', '/'))
-
-
-# @login_required()
-# def delete_tweet(request, tweet_id):
-#     tweet = get_object_or_404(Tweet, pk=tweet_id)
-#     if tweet.user != request.user:
-#         raise PermissionDenied
-#     tweet.delete()
-#     messages.success(request, 'Tweet successfully deleted')
-#     return redirect(request.GET.get('next', '/'))
+def confirm_reset_password(request, token):
+    token = get_object_or_404(ValidationToken, token=token)
+    form = ConfirmResetPasswordForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            user = User.objects.get(email=token.email)
+            user.set_password(form.cleaned_data['new_password'])
+            user.save()
+            token.delete()
+            return redirect(request.GET.get('next', '/'))
+    return render(request, 'confirm_reset_password.html', {
+        'form': form
+    })

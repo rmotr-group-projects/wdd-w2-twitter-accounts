@@ -1,0 +1,47 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <form role="form" class='profile-form' action="" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% if form.errors %}
+              {% for error in form.non_field_errors %}
+                  <div class="alert alert-danger">
+                      <strong>{{ error }}</strong>
+                  </div>
+              {% endfor %}
+          {% endif %}
+          <h2>@{{request.user.username}}'s profile</h2>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input class="form-control" value="{{request.user.username}}" readonly>
+          </div>
+          <div class="form-group">
+            <label for="first_name">First name</label>
+            <input class="form-control" name="first_name" placeholder="Your first name" value="{{form.first_name.value}}">
+            {{ form.first_name.errors }}
+          </div>
+          <div class="form-group">
+            <label for="last_name">Last name</label>
+            <input class="form-control" name="last_name" placeholder="Your last name" value="{{form.last_name.value}}">
+            {{ form.last_name.errors }}
+          </div>
+          <div class="form-group">
+            <label for="birth_date">Birth date</label>
+            <input class="form-control" name="birth_date" placeholder="Your birth date (1990-12-31)" value="{{form.birth_date.value|date:"Y-m-d"}}">
+            {{ form.birth_date.errors }}
+          </div>
+          <div class="form-group">
+            <label for="profile-image">Profile Image</label>
+            {{ form.avatar }}
+            {{ form.avatar.errors }}
+          </div>
+
+          <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
