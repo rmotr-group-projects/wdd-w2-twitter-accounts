@@ -11,6 +11,7 @@ urlpatterns = [
     #url(r'^unfollow', views.unfollow),
     url(r'^register', views.register),
     url(r'^users/validate/(?P<token>\w+)$', views.validate_user),
+    url(r'^change-password', views.change_password),
     #url(r'^tweet/(?P<tweet_id>\d+)/delete', views.delete_tweet),
     url(r'^(?P<username>\w+)$', views.home),
     url(r'^$', views.home),

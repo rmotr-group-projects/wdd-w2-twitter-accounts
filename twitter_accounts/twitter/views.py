@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.core.mail import send_mail
 
 from .models import Tweet, ValidationToken
-from .forms import TweetForm, RegisterForm
+from .forms import TweetForm, RegisterForm, ChangePasswordForm
 
 User = get_user_model()
 
@@ -101,6 +101,20 @@ def validate_user(request, token):
     user.save()
     token.delete()
     return redirect(request.GET.get('next', '/login'))
+
+
+@login_required()
+def change_password(request):
+    form = ChangePasswordForm(request.POST or None)
+    form.user = request.user
+    if request.method == "POST":
+        if form.is_valid():
+            request.user.set_password(form.cleaned_data["new_password"])
+            request.user.save()
+            return redirect(request.GET.get('next', '/'))
+    return render(request, 'change_password.html', {
+        'form': form
+    })
 
 
 
