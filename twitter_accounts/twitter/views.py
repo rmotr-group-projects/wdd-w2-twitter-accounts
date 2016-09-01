@@ -5,13 +5,13 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Q
 from django.core.mail import send_mail
-from django.views.generic.base import View
 from django.views.generic import FormView
+from django.views.generic.base import View
+from django.views.decorators.http import require_POST
 
 from .models import Tweet, ValidationToken
 from .forms import (TweetForm, ProfileForm, RegisterForm, ChangePasswordForm,

@@ -1,8 +1,6 @@
-import os
 from datetime import date
 
 from django.core import mail
-from django.conf import settings
 from django_webtest import WebTest
 from django.contrib.auth import get_user_model
 
@@ -79,7 +77,6 @@ class AccountsTestCase(WebTest):
         self.assertTrue(user.email_validated)
         self.assertEqual(ValidationToken.objects.count(), 0)
 
-
     def test_change_password(self):
         """Should change password of authenticated user when given data is valid"""
         # Preconditions
@@ -97,7 +94,6 @@ class AccountsTestCase(WebTest):
         user = User.objects.get(username=self.user.username)
         self.assertTrue(user.check_password('newpassword123'))
         self.assertFalse(user.check_password('password123'))
-
 
     def test_reset_password(self):
         """Should send password recovery url by email to given address"""
