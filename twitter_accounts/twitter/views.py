@@ -1,3 +1,4 @@
+from braces.views import GroupRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
 from django.http.response import HttpResponseRedirect
@@ -10,7 +11,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.mail import send_mail
 from django.views.generic import FormView
-from django.views.generic.base import View
+from django.views.generic.base import View, TemplateView
 from django.views.decorators.http import require_POST
 
 from .models import Tweet, ValidationToken
@@ -208,3 +209,12 @@ class ConfirmResetPasswordView(FormView):
         user.save()
         token.delete()
         return redirect(self.request.GET.get('next', '/'))
+
+
+class DashboardView(GroupRequiredMixin, TemplateView):
+    http_method_names = ["get"]
+    template_name = 'dashboard.html'
+    group_required = "Admin users"
+
+    def no_permissions_fail(self, request=None):
+        return HttpResponseForbidden()

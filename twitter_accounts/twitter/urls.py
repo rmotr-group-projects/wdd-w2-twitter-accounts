@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^users/validate/(?P<token>\w+)$', views.ValidateUserView.as_view()),
     url(r'^users/change-password', views.ChangePasswordView.as_view()),
     url(r'^users/reset-password', views.ResetPasswordView.as_view()),
+    url(r'^dashboard', views.DashboardView.as_view()),
     url(r'^users/confirm-reset-password/(?P<token>\w+)$', views.ConfirmResetPasswordView.as_view()),
     url(r'^tweet/(?P<tweet_id>\d+)/delete', views.delete_tweet),
     url(r'^(?P<username>\w+)$', views.home),

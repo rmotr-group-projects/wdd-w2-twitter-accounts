@@ -3,6 +3,7 @@ from datetime import date
 from django.core import mail
 from django_webtest import WebTest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 from twitter.models import ValidationToken
 
@@ -137,3 +138,20 @@ class AccountsTestCase(WebTest):
         self.assertTrue(user.check_password('newpassword123'))
         self.assertFalse(user.check_password('password123'))
         self.assertEqual(ValidationToken.objects.count(), 0)
+
+    def test_dashboard_admin_group(self):
+        """Should allow accessing to dashboard view when authenticated user belongs to admin users group"""
+        # Preconditions
+        self.assertEqual(Group.objects.count(), 0)
+        self.assertEqual(self.user.groups.count(), 0)
+        response = self.app.get('/dashboard', user=self.user, status=403)
+        self.assertEqual(response.status_code, 403)
+
+        group = Group.objects.create(name='Admin users')
+        self.user.groups.add(group)
+
+        # Postconditions
+        self.assertEqual(Group.objects.count(), 1)
+        self.assertEqual(self.user.groups.count(), 1)
+        response = self.app.get('/dashboard', user=self.user)
+        self.assertEqual(response.status_code, 200)
