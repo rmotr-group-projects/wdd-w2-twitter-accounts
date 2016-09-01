@@ -9,8 +9,12 @@ from django.conf import settings
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 
+#from django.views import View
+
 from .models import Tweet
 from .forms import TweetForm, ProfileForm
+
+#============ Pre-coded ========================================================
 
 User = get_user_model()
 
@@ -111,3 +115,8 @@ def delete_tweet(request, tweet_id):
     tweet.delete()
     messages.success(request, 'Tweet successfully deleted')
     return redirect(request.GET.get('next', '/'))
+    
+#============ Pre-coded ========================================================
+
+#class RegisterView(View):
+#    pass
