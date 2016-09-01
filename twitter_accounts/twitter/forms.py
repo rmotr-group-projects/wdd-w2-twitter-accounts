@@ -4,41 +4,38 @@ from django.core.exceptions import ValidationError
 from .models import Tweet, User
 
 
+class OnlyLettersField(forms.CharField):
+
+    def clean(self, value):
+        if not value.isalpha():
+            raise ValidationError('This field must contain only letters.')
+        else:
+            return value
+
+
 class TweetForm(forms.ModelForm):
     class Meta:
         model = Tweet
         fields = ['content']
 
 
-class ProfileForm(forms.Form):
-    avatar = forms.ImageField(required=False)
-    first_name = forms.CharField(required=False)
-    last_name = forms.CharField(required=False)
-    birth_date = forms.DateField(required=False)
+class ProfileForm(forms.ModelForm):
+    first_name = OnlyLettersField(required=False)
+    last_name = OnlyLettersField(required=False)
 
-    def clean_first_name(self):
-        first_name = self.cleaned_data['first_name']
-        if not first_name.isalpha():
-            raise ValidationError('First name must contain only letters.')
-        else:
-            return first_name
-
-    def clean_last_name(self):
-        last_name = self.cleaned_data['last_name']
-        if not last_name.isalpha():
-            raise ValidationError('Last name must contain only letters.')
-        else:
-            return last_name
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'avatar', 'birth_date')
 
 
-class RegisterForm(forms.Form):
-    username = forms.CharField(required=True)
-    password = forms.CharField(required=True, min_length=8)
-    first_name = forms.CharField(required=True)
-    last_name = forms.CharField(required=True)
-    email = forms.EmailField(required=True)
-    avatar = forms.ImageField(required=False)
-    birth_date = forms.DateField(required=False)
+class RegisterForm(forms.ModelForm):
+    first_name = OnlyLettersField(required=True)
+    last_name = OnlyLettersField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'first_name', 'last_name',
+                  'email', 'avatar', 'birth_date')
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -46,20 +43,6 @@ class RegisterForm(forms.Form):
             raise ValidationError('Given username is not available')
         else:
             return username
-
-    def clean_first_name(self):
-        first_name = self.cleaned_data['first_name']
-        if not first_name.isalpha():
-            raise ValidationError('First name must contain only letters.')
-        else:
-            return first_name
-
-    def clean_last_name(self):
-        last_name = self.cleaned_data['last_name']
-        if not last_name.isalpha():
-            raise ValidationError('Last name must contain only letters.')
-        else:
-            return last_name
 
 
 class ChangePasswordForm(forms.Form):
