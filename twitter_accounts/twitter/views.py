@@ -1,16 +1,22 @@
+from braces.views import GroupRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
+from django.http.response import HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.views.generic import FormView
+from django.views.generic.base import View, TemplateView
 from django.views.decorators.http import require_POST
 
-from .models import Tweet
-from .forms import TweetForm, ProfileForm
+from .models import Tweet, ValidationToken
+from .forms import (TweetForm, ProfileForm, RegisterForm, ChangePasswordForm,
+                    ResetPasswordForm, ConfirmResetPasswordForm)
 
 User = get_user_model()
 
@@ -111,3 +117,104 @@ def delete_tweet(request, tweet_id):
     tweet.delete()
     messages.success(request, 'Tweet successfully deleted')
     return redirect(request.GET.get('next', '/'))
+
+
+class RegisterView(FormView):
+    form_class = RegisterForm
+    template_name = 'register.html'
+    success_url = '/'
+
+    def form_valid(self, form):
+        User.objects.create_user(
+            username=form.cleaned_data["username"],
+            password=form.cleaned_data["password"],
+            first_name=form.cleaned_data["first_name"].title(),
+            last_name=form.cleaned_data["last_name"].title(),
+            email=form.cleaned_data["email"],
+            birth_date=form.cleaned_data["birth_date"],
+            avatar=form.cleaned_data["avatar"],
+            is_active=False
+        )
+        token = ValidationToken.objects.create(
+            email=form.cleaned_data["email"])
+        url = 'http://twitter.com/users/validate/{}'.format(token.token)
+        send_mail(
+            'Validate your account.',
+            'Thanks for registering. To complete the process, please click in the link below: {}'.format(url),
+            'twitter@noreply.com',
+            [form.cleaned_data["email"]],
+            fail_silently=False,
+        )
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class ValidateUserView(View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        token = get_object_or_404(ValidationToken, token=kwargs.get('token'))
+        user = User.objects.get(email=token.email)
+        user.email_validated = True
+        user.is_active = True
+        user.save()
+        token.delete()
+        return redirect(request.GET.get('next', '/login'))
+
+
+class ChangePasswordView(LoginRequiredMixin, FormView):
+    form_class = ChangePasswordForm
+    template_name = 'change_password.html'
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+        form = form_class(**self.get_form_kwargs())
+        form.user = self.request.user
+        return form
+
+    def form_valid(self, form):
+        self.request.user.set_password(form.cleaned_data["new_password"])
+        self.request.user.save()
+        messages.success(self.request, 'Password changed successfully!')
+        return render(self.request, self.template_name)
+
+
+class ResetPasswordView(FormView):
+    form_class = ResetPasswordForm
+    template_name = 'reset_password.html'
+
+    def form_valid(self, form):
+        if User.objects.filter(email=form.cleaned_data.get('email')).exists():
+            token = ValidationToken.objects.create(
+                email=form.cleaned_data.get('email'))
+            url = 'http://twitter.com/users/confirm-reset-password/{}'.format(token.token)
+            send_mail(
+                'Password recovery.',
+                'To reset your password, please click in the link below: {}'.format(url),
+                'twitter@noreply.com',
+                [form.cleaned_data.get('email')],
+                fail_silently=False,
+            )
+        messages.success(self.request, 'Email sent!')
+        return render(self.request, self.template_name)
+
+
+class ConfirmResetPasswordView(FormView):
+    form_class = ConfirmResetPasswordForm
+    template_name = 'confirm_reset_password.html'
+
+    def form_valid(self, form):
+        token = get_object_or_404(ValidationToken, token=self.kwargs.get('token'))
+        user = User.objects.get(email=token.email)
+        user.set_password(form.cleaned_data['new_password'])
+        user.save()
+        token.delete()
+        return redirect(self.request.GET.get('next', '/'))
+
+
+class DashboardView(GroupRequiredMixin, TemplateView):
+    http_method_names = ["get"]
+    template_name = 'dashboard.html'
+    group_required = "Admin users"
+
+    def no_permissions_fail(self, request=None):
+        return HttpResponseForbidden()
