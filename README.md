@@ -1,21 +1,21 @@
-# Twitter Profile
+# Twitter Accounts management
 
-For this project we'll have to extend our previous Twitter timeline project to include a profile view for our user which will allow her to update her personal information **and her profile picture**.
+### Registration page
 
-This project can end up being considerably easier to solve than the previous ones. In that case, the power of Django will be evident. We recommend you to take a look at the [documentation about managing files](https://docs.djangoproject.com/en/1.9/topics/files/) and in particular, to the [ImageField reference](https://docs.djangoproject.com/en/1.9/ref/models/fields/#django.db.models.ImageField).
+![image](https://cloud.githubusercontent.com/assets/872296/18180344/d01e2898-705c-11e6-8fab-28e3f00aa2f8.png)
 
-As usual, here's a list of pages to show how it should look:
+### Change Password
 
-### Home page for user with profile picture
+![image](https://cloud.githubusercontent.com/assets/872296/18180367/ef964570-705c-11e6-95ed-c25dfc2d4399.png)
 
-![image](https://cloud.githubusercontent.com/assets/872296/18090592/dd699310-6e9b-11e6-9357-bbb31b16eb53.png)
+### Forgot Password
 
-### User's profile page without profile pic
+![image](https://cloud.githubusercontent.com/assets/872296/18180394/0e937664-705d-11e6-97dc-301147c3ec2c.png)
 
-(A default image should be included)
+![image](https://cloud.githubusercontent.com/assets/872296/18180408/207f578a-705d-11e6-8729-da04f93835f6.png)
 
-![image](https://cloud.githubusercontent.com/assets/872296/18095682/0f992280-6eae-11e6-9fe7-20af7d177525.png)
+### Reset Password
 
-### Update profile page
+**Important** Note the validation token
 
-![image](https://cloud.githubusercontent.com/assets/872296/18095723/3270abde-6eae-11e6-83af-dddc0de024ab.png)
+![image](https://cloud.githubusercontent.com/assets/872296/18180455/50858eea-705d-11e6-9687-f33cc5b38496.png)
