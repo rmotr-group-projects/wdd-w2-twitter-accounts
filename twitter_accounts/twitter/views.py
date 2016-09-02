@@ -2,15 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 
 from .models import Tweet
-from .forms import TweetForm, ProfileForm, RegisterForm
+from .forms import TweetForm, ProfileForm, RegisterForm, ChangePasswordForm
 
 User = get_user_model()
 
@@ -121,9 +122,21 @@ class Register(CreateView):
     success_url = '/'
 
 
+@method_decorator(login_required, 'dispatch')
+class ChangePassword(UpdateView):
+    model = User
+    form_class = ChangePasswordForm
+    template_name = 'change_password.html'
 
-def change_password(request):
-    pass
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        self.request.user.set_password(form.cleaned_data['new_password'])
+        messages.success(self.request, 'Succesfully changed password!')
+        return render(self.request, self.template_name)
 
 
 def reset_password(request):

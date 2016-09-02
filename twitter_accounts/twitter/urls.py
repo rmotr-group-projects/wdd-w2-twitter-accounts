@@ -12,7 +12,7 @@ urlpatterns = [
     url(r'^profile', views.profile),
     url(r'^register', views.Register.as_view()),
     url(r'^users/reset-password', views.reset_password),
-    url(r'^users/change-password', views.change_password),
+    url(r'^users/change-password', views.ChangePassword.as_view()),
     url(r'^users/confirm-reset-password/(?P<validation_token>[\d\w]+)', views.confirm_change_password),
     url(r'^users/validate/(?P<validation_token>[\d\w]+)', views.validate),
     url(r'^tweet/(?P<tweet_id>\d+)/delete', views.delete_tweet),
