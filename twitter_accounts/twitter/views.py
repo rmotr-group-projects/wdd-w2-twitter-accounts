@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
-
+from django.views.generic.edit import CreateView
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.views.decorators.http import require_POST
 
 from .models import Tweet
-from .forms import TweetForm, ProfileForm
+from .forms import TweetForm, ProfileForm, RegisterForm
 
 User = get_user_model()
 
@@ -113,8 +113,13 @@ def delete_tweet(request, tweet_id):
     return redirect(request.GET.get('next', '/'))
 
 
-def register(request):
-    pass
+class Register(CreateView):
+    model = User
+    form_class = RegisterForm
+    # fields = ['username', 'password', 'first_name', 'last_name', 'email', 'birth_date', 'avatar']
+    template_name = 'register.html'
+    success_url = '/'
+
 
 
 def change_password(request):

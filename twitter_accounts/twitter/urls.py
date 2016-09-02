@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^follow', views.follow),
     url(r'^unfollow', views.unfollow),
     url(r'^profile', views.profile),
-    url(r'^register', views.register),
+    url(r'^register', views.Register.as_view()),
     url(r'^users/reset-password', views.reset_password),
     url(r'^users/change-password', views.change_password),
     url(r'^users/confirm-reset-password/(?P<validation_token>[\d\w]+)', views.confirm_change_password),

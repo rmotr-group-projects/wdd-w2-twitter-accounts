@@ -5,7 +5,6 @@ from .models import Tweet, User
 
 
 class OnlyLettersField(forms.CharField):
-
     def clean(self, value):
         if not value.isalpha():
             raise ValidationError('This field must contain only letters.')
@@ -26,3 +25,13 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email', 'avatar', 'birth_date')
+
+
+class RegisterForm(forms.ModelForm):
+    first_name = OnlyLettersField(required=True)
+    last_name = OnlyLettersField(required=True)
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'birth_date', 'avatar']
