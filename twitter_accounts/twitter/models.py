@@ -17,8 +17,11 @@ class Relationship(models.Model):
     following = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
 
-class User(AbstractUser):
+class ValidationToken(models.Model):
+    pass
 
+
+class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 

@@ -111,3 +111,19 @@ def delete_tweet(request, tweet_id):
     tweet.delete()
     messages.success(request, 'Tweet successfully deleted')
     return redirect(request.GET.get('next', '/'))
+
+
+def register(request):
+    pass
+
+
+def change_password(request):
+    pass
+
+
+def reset_password(request):
+    pass
+
+
+def confirm_change_password(request, validation_token):
+    pass
