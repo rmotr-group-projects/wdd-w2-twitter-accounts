@@ -2,17 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 
-from .models import Tweet
-from .forms import TweetForm, ProfileForm, RegisterForm, ChangePasswordForm
+from .models import Tweet, ValidationToken
+from .forms import TweetForm, ProfileForm, RegisterForm, ChangePasswordForm, ResetPasswordForm, ConfirmResetPasswordForm
 
 User = get_user_model()
 
@@ -115,7 +114,7 @@ def delete_tweet(request, tweet_id):
     return redirect(request.GET.get('next', '/'))
 
 
-class Register(CreateView):
+class RegisterView(CreateView):
     model = User
     form_class = RegisterForm
     # fields = ['username', 'password', 'first_name', 'last_name', 'email', 'birth_date', 'avatar']
@@ -131,7 +130,7 @@ class Register(CreateView):
 
 
 # @method_decorator(login_required, 'dispatch')
-class ChangePassword(LoginRequiredMixin, UpdateView):
+class ChangePasswordView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = ChangePasswordForm
     template_name = 'change_password.html'
@@ -150,16 +149,33 @@ class ChangePassword(LoginRequiredMixin, UpdateView):
         messages.success(self.request, 'Succesfully changed password!')
         return render(self.request, self.template_name)
 
-    def form_invalid(self, form):
-        raise ValueError(str(form.errors))
+
+class ResetPasswordView(FormView):
+    template_name = 'reset_password.html'
+    form_class = ResetPasswordForm
+
+    def form_valid(self, form):
+        if User.objects.filter(email=form.cleaned_data['email']):
+            # create token
+            # send email
+            pass
+        messages.success(self.request, 'Email sent!')
+        return super().form_invalid(form)
 
 
-def reset_password(request):
-    pass
+class ConfirmChangePasswordView(FormView):
+    template_name = 'confirm_reset_password.html'
+    form_class = ConfirmResetPasswordForm
 
+    def form_valid(self, form):
+        token = get_object_or_404(ValidationToken, self.kwargs.get('validation_token'))
+        user = User.objects.get(email=token.email)
+        user.set_password(form.cleaned_data.get('new_password'))
+        user.save()
+        messages.success(self.request, 'Password changed!')
+        token.delete()
+        return super().form_valid(form)
 
-def confirm_change_password(request, validation_token):
-    pass
 
 
 def validate(request, validation_token):
