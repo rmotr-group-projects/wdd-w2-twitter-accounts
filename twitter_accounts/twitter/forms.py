@@ -59,3 +59,7 @@ class ChangePasswordForm(forms.ModelForm):
 
         if new_password != repeated_new_password:
             raise ValidationError('The new passwords don\'t match')
+
+    class Meta:
+        model = User
+        fields = []
