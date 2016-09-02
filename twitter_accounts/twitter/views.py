@@ -127,3 +127,7 @@ def reset_password(request):
 
 def confirm_change_password(request, validation_token):
     pass
+
+
+def validate(request, validation_token):
+    pass

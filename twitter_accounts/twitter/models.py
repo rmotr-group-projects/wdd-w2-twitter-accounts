@@ -18,7 +18,8 @@ class Relationship(models.Model):
 
 
 class ValidationToken(models.Model):
-    pass
+    email = models.EmailField()
+    token = models.CharField(max_length=140)
 
 
 class User(AbstractUser):
