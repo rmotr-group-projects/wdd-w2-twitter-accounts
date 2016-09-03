@@ -1,6 +1,11 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from uuid import uuid4
+
+
+def generate_token():
+    return str(uuid4())
 
 
 class Tweet(models.Model):
@@ -19,12 +24,16 @@ class Relationship(models.Model):
 
 class ValidationToken(models.Model):
     email = models.EmailField()
-    token = models.CharField(max_length=140)
+    token = models.CharField(max_length=36, default=generate_token)
+
+    class Meta:
+        unique_together = (('email', 'token'),)
 
 
 class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
+    email_validated = models.BooleanField(default=False)
 
     def follow(self, twitter_profile):
         try:

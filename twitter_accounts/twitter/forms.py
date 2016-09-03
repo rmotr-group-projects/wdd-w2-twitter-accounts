@@ -63,3 +63,19 @@ class ChangePasswordForm(forms.ModelForm):
     class Meta:
         model = User
         fields = []
+
+
+class ResetPasswordForm(forms.Form):
+    email = forms.EmailField(required=True)
+
+
+class ConfirmResetPasswordForm(forms.Form):
+    new_password = forms.CharField(required=True, min_length=8, widget=forms.PasswordInput)
+    repeated_new_password = forms.CharField(required=True, min_length=8, widget=forms.PasswordInput)
+
+    def clean(self):
+        new_password = self.cleaned_data['new_password']
+        repeated_new_password = self.cleaned_data['repeated_new_password']
+
+        if new_password != repeated_new_password:
+            raise ValidationError('The new passwords don\'t match')
