@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.db.models import Q
 from django.views.decorators.http import require_POST
-
+from django.core.mail import send_mail
 from .models import Tweet, ValidationToken
 from .forms import TweetForm, ProfileForm, RegisterForm, ChangePasswordForm, ResetPasswordForm, ConfirmResetPasswordForm
 
@@ -115,8 +115,7 @@ def delete_tweet(request, tweet_id):
     return redirect(request.GET.get('next', '/'))
 
 
-class RegisterView(CreateView):
-    model = User
+class RegisterView(FormView):
     form_class = RegisterForm
     # fields = ['username', 'password', 'first_name', 'last_name', 'email', 'birth_date', 'avatar']
     template_name = 'register.html'
@@ -124,9 +123,20 @@ class RegisterView(CreateView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
-        print(form.cleaned_data)
         user.set_password(form.cleaned_data['password'])
+        user.is_active = False
+        user.email_validated = False
         user.save()
+        token = ValidationToken.objects.create(email=form.cleaned_data['email'])
+        email_message = ("Thanks for registering. To complete the process, please "
+                         "click in the link below: "
+                         "http://twitter.com/users/validate/{}".format(token.token))
+        send_mail('Registration confirmation',
+                  email_message,
+                  'twitter-clone@clones.r.us',
+                  [form.cleaned_data['email'], ],
+                  fail_silently=False)
+        messages.info(self.request, 'Confirmation email sent!')
         return HttpResponseRedirect(self.success_url)
 
 
