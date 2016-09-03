@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
-from django.views.generic.edit import CreateView, UpdateView, FormView
-from django.views.generic import View
+from django.views.generic.edit import UpdateView, FormView
+from django.views.generic import View, TemplateView
+from braces.views import GroupRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -207,3 +208,10 @@ class ValidateView(View):
         token.delete()
         messages.success(request, 'Validation successful!')
         return redirect('/login')
+
+
+class DashboardView(GroupRequiredMixin, TemplateView):
+    http_method_names = ["get"]
+    template_name = 'dashboard.html'
+    group_required = 'Admin users'
+    raise_exception = HttpResponseForbidden

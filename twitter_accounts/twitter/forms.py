@@ -44,7 +44,7 @@ class ChangePasswordForm(forms.ModelForm):
     repeated_new_password = forms.CharField(required=True, min_length=8, widget=forms.PasswordInput)
 
     def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
 
         # set the user_id as an attribute of the form
         self.user = user

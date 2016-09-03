@@ -15,6 +15,8 @@ urlpatterns = [
 
     url(r'^register', views.RegisterView.as_view()),
 
+    url(r'^dashboard', views.DashboardView.as_view()),
+
     url(r'^users/reset-password', views.ResetPasswordView.as_view()),
     url(r'^users/change-password', views.ChangePasswordView.as_view()),
     url(r'^users/confirm-reset-password/(?P<validation_token>[\d\w]+)', views.ConfirmResetPasswordView.as_view()),
