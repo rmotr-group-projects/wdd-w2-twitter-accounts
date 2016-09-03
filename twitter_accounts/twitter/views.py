@@ -183,3 +183,10 @@ class ValidateView(View):
 
     def get(self, request, *args, **kwargs):
         token = get_object_or_404(ValidationToken, token=kwargs.get('validation_token'))
+        user = User.objects.get(email=token.email)
+        user.is_active = True
+        user.email_validated = True
+        user.save()
+        token.delete()
+        messages.success(request, 'Validation successful!')
+        return redirect('/login')
