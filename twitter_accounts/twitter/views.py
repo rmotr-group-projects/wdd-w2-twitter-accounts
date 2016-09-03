@@ -167,9 +167,13 @@ class ResetPasswordView(FormView):
 
     def form_valid(self, form):
         if User.objects.filter(email=form.cleaned_data['email']):
-            # create token
-            # send email
-            pass
+            token = ValidationToken.objects.create(email=form.cleaned_data['email'])
+            email_message = ("To reset your password, please click in the link below: "
+                             "http://twitter.com/users/confirm-reset-password/{}".format(token.token))
+            send_mail('Reset password',
+                      email_message,
+                      'twitter-reset-pass@notreal.email',
+                      [[form.cleaned_data['email'], ]])
         messages.success(self.request, 'Email sent!')
         return super().form_invalid(form)
 
