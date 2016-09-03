@@ -150,7 +150,7 @@ class ChangePasswordView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
+        kwargs = super(ChangePasswordView, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -175,21 +175,24 @@ class ResetPasswordView(FormView):
                       'twitter-reset-pass@notreal.email',
                       [[form.cleaned_data['email'], ]])
         messages.success(self.request, 'Email sent!')
-        return super().form_invalid(form)
+        return super(ResetPasswordView, self).form_invalid(form)
 
 
-class ConfirmChangePasswordView(FormView):
+class ConfirmResetPasswordView(FormView):
     template_name = 'confirm_reset_password.html'
     form_class = ConfirmResetPasswordForm
+    success_url = '/'
 
     def form_valid(self, form):
-        token = get_object_or_404(ValidationToken, self.kwargs.get('validation_token'))
+        # import ipdb;
+        # ipdb.set_trace()
+        token = get_object_or_404(ValidationToken, token=self.kwargs.get('validation_token'))
         user = User.objects.get(email=token.email)
         user.set_password(form.cleaned_data.get('new_password'))
         user.save()
         messages.success(self.request, 'Password changed!')
         token.delete()
-        return super().form_valid(form)
+        return super(ConfirmResetPasswordView, self).form_valid(form)
 
 
 class ValidateView(View):

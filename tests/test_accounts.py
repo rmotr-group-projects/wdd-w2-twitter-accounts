@@ -131,6 +131,7 @@ class AccountsTestCase(WebTest):
         form = response.form
         form['new_password'] = 'newpassword123'
         form['repeated_new_password'] = 'newpassword123'
+        # import ipdb; ipdb.set_trace()
         form.submit()
 
         # Postconditions
