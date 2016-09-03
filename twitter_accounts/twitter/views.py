@@ -3,6 +3,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
 from django.views.generic.edit import CreateView, UpdateView, FormView
+from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -177,6 +178,8 @@ class ConfirmChangePasswordView(FormView):
         return super().form_valid(form)
 
 
+class ValidateView(View):
+    http_method_names = ['get']
 
-def validate(request, validation_token):
-    pass
+    def get(self, request, *args, **kwargs):
+        token = get_object_or_404(ValidationToken, token=kwargs.get('validation_token'))
